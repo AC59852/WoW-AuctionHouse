@@ -27,6 +27,8 @@
 
       filteredAuctions = value;
 
+      filteredAuctions.sort((a, b) => a.buyout - b.buyout);
+
       filteredAuctions.forEach((auction) => {
         let gold = Math.floor(auction.buyout / 10000);
         let silver = Math.floor((auction.buyout - (gold * 10000)) / 100);
