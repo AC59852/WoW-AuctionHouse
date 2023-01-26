@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { getSearchResults, getServerSideProps, searchResults, token } from '../getToken.svelte';
+  import Navigation from '../../components/Navigation.svelte';
 
   // get the query
   const query = $page.url.searchParams.get('q')
@@ -16,15 +17,9 @@
         getSearchResults(value, query);
       });
     })
-
     searchResults.subscribe((value) => {
       filteredResults = value;
-
-      // remove anything with TEST in the name
-      filteredResults = filteredResults.filter((item) => {
-        return !item.data.name.en_US.includes('TEST');
-      })
-
+      console.log(filteredResults);
       // sort the results by name
       filteredResults.sort((a, b) => {
         if (a.data.name.en_US < b.data.name.en_US) {
@@ -38,6 +33,7 @@
     })
   });
 </script>
+<Navigation />
 {#each filteredResults as item}
 <a href="auctions/{item.data.id}">
     <h1>{item.data.name.en_US}</h1>

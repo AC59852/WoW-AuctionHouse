@@ -3,6 +3,7 @@
   import { writable, readable } from 'svelte/store';
 
   export const token = writable('');
+  export const items = writable([]);
   export const auctions = writable([]);
   export const item = writable({});
   export const searchResults = writable([]);
@@ -17,10 +18,33 @@
     };
   }
 
+  export async function getServerSideItems() {
+    const response = await axios.get('https://wow-ah-server.onrender.com/items');
+    items.set(response.data);
+    return {
+      props: {
+        items: response.data,
+      },
+    };
+  }
+
   export async function getSearchResults(value, query) {
-    await fetch(`https://us.api.blizzard.com/data/wow/search/item?namespace=static-classic-us&locale=en_US&orderby=id:asc&access_token=${value}&name.en_US=${query}`)
+    await fetch(`https://us.api.blizzard.com/data/wow/search/item?namespace=static-classic-us&locale=en_US&orderby=id:asc&name.en_US=${query}`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
     .then(response => response.json())
     .then(data => {
+      // filter items with the name TEST or Test in the name
+      data.results = data.results.filter((item) => {
+        return !item.data.name.en_US.includes('TEST');
+      })
+
+      data.results = data.results.filter((item) => {
+        return !item.data.name.en_US.includes('Test');
+      })
+
       searchResults.set(data.results);
       data.results.forEach((result) => {
         getSearchMedia(value, result.data.id);
@@ -29,7 +53,11 @@
   }
 
   export async function getSearchMedia(value, id) {
-    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US&access_token=${value}`)
+    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US&`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
     .then(response => response.json())
     .then(data => {
       searchResults.update(n => {
@@ -44,7 +72,11 @@
   }
 
   export async function getItem(value, slug) {
-    await fetch(`https://us.api.blizzard.com/data/wow/item/${slug.slug}?namespace=static-classic-us&locale=en_US&access_token=${value}`)
+    await fetch(`https://us.api.blizzard.com/data/wow/item/${slug.slug}?namespace=static-classic-us&locale=en_US`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
     .then(response => response.json())
     .then(data => {
       item.set(data)
@@ -53,7 +85,11 @@
   }
 
   export async function getMedia(value, id) {
-    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US&access_token=${value}`)
+    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
     .then(response => response.json())
     .then(data => {
       item.update(n => {
@@ -64,7 +100,11 @@
   }
 
   export async function getAuctions(value, slug) {
-    await fetch(`https://us.api.blizzard.com/data/wow/connected-realm/4738/auctions/2?namespace=dynamic-classic-us&locale=en_US&orderby=buyout:desc&access_token=${value}`)
+    await fetch(`https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2?namespace=dynamic-classic-us&locale=en_US&orderby=buyout:desc`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
     .then(response => response.json())
     .then(data => {
       auctions.set(data.auctions.filter(auction => auction.item.id === parseInt(slug.slug)));
