@@ -26,9 +26,10 @@
 <header class="header">
   <nav class="header__nav">
     <input
+      class="header__search"
       type="search"
       name="search"
-      placeholder="Search"
+      placeholder="Search: Siren's Tear, Staff of Jordan"
       bind:value={searchQuery}
       on:keydown={handleKeyDown}
     >
@@ -38,3 +39,50 @@
     </ul>
   </nav>
 </header>
+<style>
+  .header {
+    width: 100%;
+    padding: 35px 0;
+    position: relative;
+  }
+
+  .header__nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header__search {
+    width: 520px;
+    padding: 16px 25px;
+    box-sizing: border-box;
+    background-color: #2F2F2F;
+    border: none;
+    border-radius: 999999px;
+    color: white;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .header__search::placeholder {
+    opacity: 1;
+    color: rgb(153, 153, 153);
+  }
+
+  .header__list {
+    display: flex;
+    margin-left: auto;
+    right: 95px;
+    position: absolute;
+    gap: 30px;
+  }
+
+  .header__link {
+    color: white;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+</style>
