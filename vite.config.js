@@ -1,7 +1,15 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 
 const config = {
-	plugins: [sveltekit()]
+	plugins: [sveltekit()],
+
+  pwa: {
+    workboxPluginMode: "GenerateSW",
+    workboxOptions: {
+      skipWaiting: true,
+      clientsClaim: true
+    }
+  },
 };
 
 export default config;
