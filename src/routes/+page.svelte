@@ -91,7 +91,7 @@
 </section>
 <section class="home__random">
   <h2 class="home__title">Random <span><img src={Arrow} class="home__arrow" alt="Arrow pointing right"></span></h2>
-  <ul>
+  <ul class="home__randomList">
     {#each randomItems as item}
       <RandomItem item={item} />
     {/each}
@@ -279,6 +279,13 @@
     text-decoration: none;
   }
 
+  .home__randomList {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 35px;
+  }
+
   .expensive__cards {
     display: flex;
     justify-content: center;
@@ -303,6 +310,11 @@
 
     .hero__splash {
       width: 76%;
+    }
+
+    .home__randomList {
+      justify-content: center;
+      gap: 55px;
     }
 
     .expensive__cards {

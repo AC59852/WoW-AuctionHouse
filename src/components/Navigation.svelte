@@ -32,6 +32,7 @@
       placeholder="Search: Siren's Tear, Staff of Jordan"
       bind:value={searchQuery}
       on:keydown={handleKeyDown}
+      maxlength="100"
     >
     <ul class="header__list">
       <li class="header__item"><a href="/" class="header__link">Home</a></li>
