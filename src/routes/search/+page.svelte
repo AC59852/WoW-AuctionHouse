@@ -10,13 +10,15 @@
   const query = $page.url.searchParams.get('q')
   let filteredResults = [];
   let totalResults = 0;
+  let accessToken;
 
   // get the search results
   onMount(async () => {
     getServerSideProps()
     .then(() => {
       token.subscribe((value) => {
-        getSearchResults(value, query);
+        accessToken = value;
+        getSearchResults(accessToken, query);
       });
     })
     searchResults.subscribe((value) => {
@@ -78,15 +80,6 @@
     </tbody>
   </table>
 </section>
-<!-- {#each filteredResults as item}
-<a href="auctions/{item.data.id}">
-    <h2>{item.data.name.en_US}</h2>
-    image 
-    {#if item.data.media}
-      <img src={item.data.media} alt="Icon for {item.data.name.en_US}" />
-    {/if}
-</a>
-{/each} -->
 <style>
   .search {
     width: 85%;

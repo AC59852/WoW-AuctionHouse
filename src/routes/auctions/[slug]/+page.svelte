@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { auctions, getAuctions, getItem, getServerSideProps, token, item } from '../../getToken.svelte';
   import { page } from '$app/stores';
+  import Arrow from '$lib/assets/arrow-right.svg'
   import Navigation from '../../../components/Navigation.svelte';
 
   // get the slug
@@ -9,6 +10,7 @@
   let filteredAuctions = [];
   let foundItem = {};
   let loading = true;
+  let colour;
 
   onMount(async () => {
     getServerSideProps()
@@ -22,7 +24,46 @@
     item.subscribe((value) => {
       console.log(value);
       foundItem = value;
+
+      if(value.quality) {
+        switch(value.quality.type) {
+        case "POOR":
+          colour = '#9d9d9d';
+          break;
+        case "COMMON":
+          colour = '#ffffff';
+          break;
+        case "UNCOMMON":
+          colour = '#1eff00';
+          break;
+        case "RARE":
+          colour = '#0070dd';
+          break;
+        case "EPIC":
+          colour = '#a335ee';
+          break;
+        case "LEGENDARY":
+          colour = '#ff8000';
+          break;
+        case "ARTIFACT":
+          colour = '#e6cc80';
+          break;
+        case "HEIRLOOM":
+          colour = '#e6cc80';
+          break;
+        default:
+          colour = '#ffffff';
+      }
+      }
     })
+
+    function calculatePrice(value) {
+      let gold = Math.floor(value / 10000);
+      let silver = Math.floor((value - (gold * 10000)) / 100);
+      let copper = value - (gold * 10000) - (silver * 100);
+
+      return `${gold}g ${silver}s ${copper}c`
+    }
 
     auctions.subscribe((value) => {
       console.log(value);
@@ -35,19 +76,13 @@
 
       filteredAuctions.forEach((auction) => {
 
-        let goldStack = Math.floor(auction.buyout / 10000);
-        let silverStack = Math.floor((auction.buyout - (goldStack * 10000)) / 100);
-        let copperStack = auction.buyout - (goldStack * 10000) - (silverStack * 100);
-
-        let goldItem = Math.floor(auction.buyout / auction.quantity / 10000);
-        let silverItem = Math.floor((auction.buyout / auction.quantity - (goldItem * 10000)) / 100);
-        // round copper to the nearest whole number, no decimals
-        let copperItem = Math.round((auction.buyout / auction.quantity - (goldItem * 10000) - (silverItem * 100)));
-
         auction.buyoutItem = auction.buyout / auction.quantity;
-        auction.buyoutItemParsed = `${goldItem}g ${silverItem}s ${copperItem}c`;
 
-        auction.buyoutStackParsed = `${goldStack}g ${silverStack}s ${copperStack}c`;
+        auction.bidItem = auction.bid / auction.quantity;
+        
+        auction.bidParsed = calculatePrice(auction.bid);
+        auction.buyoutItemParsed = calculatePrice(auction.buyoutItem);
+        auction.buyoutStackParsed = calculatePrice(auction.buyout);
 
         switch (auction.time_left) {
           case 'VERY_LONG':
@@ -71,45 +106,176 @@
   });
 </script>
 <Navigation />
-<section class="auction__item">
-  {#if foundItem.media}
-    <img src={foundItem.media} alt="Icon for {foundItem.name}" />
-    <a href="https://wowhead.com/wotlk/item-{foundItem.id}">View On WowHead</a>
-  {/if}
-  <div class="auction__info">
-    {#if foundItem.name}
-      <h1 class="auction__name">{foundItem.name}</h1>
-      <div class="auction__data">
-        <h2 class="auction__quality auction__quality--{foundItem.quality.name}">{foundItem.quality.name}</h2><span>/</span>
-        <h2 class="auction__class">{foundItem.item_class.name}</h2>
+<section class="auction">
+  <section class="auction__item">
+    <div class="auction__basic">
+      {#if foundItem.media}
+        <img src={foundItem.media} alt="Icon for {foundItem.name}" />
+      {/if}
+          {#if foundItem.name}
+          <div class="auction__info">
+            <h1 class="auction__name">{foundItem.name}</h1>
+            <div class="auction__data">
+              <h2 class="auction__quality" style="color: {colour}">{foundItem.quality.name}</h2><span>/</span>
+              <h2 class="auction__class">{foundItem.item_class.name}</h2>
+            </div>
+          </div>
+          {:else}
+          <h1>Loading Item</h1>
+          {/if}
+    </div>
+      <div class="auction__link">
+        <a href="https://wowhead.com/wotlk/item={foundItem.id}" class="auction__wowhead" target="_blank">View On WowHead</a>
+        <img class="auction__arrow" src={Arrow} alt="Arrow indicating to go to link">
       </div>
-    {:else}
-      <h1>Loading Item</h1>
-    {/if}
-  </div>
+  </section>
+    <table class="auction__table">
+      <thead>
+        <tr>
+          <th>Quantity</th>
+          <th>Bid Price</th>
+          <th>Buyout (item)</th>
+          <th>Buyout (stack)</th>
+          <th>Time Left</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#if loading}
+          <tr>
+            <td colspan="4">Loading auctions...</td>
+          </tr>
+        {/if}
+        {#each filteredAuctions as auction}
+          <tr class="auction__row">
+            <td>{auction.quantity}</td>
+            <td>{auction.bidParsed}</td>
+            <td>{auction.buyoutItemParsed}</td>
+            <td>{auction.buyoutStackParsed}</td>
+            <td>{auction.time_left}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
 </section>
-<table>
-  <thead>
-    <tr>
-      <th>Quantity</th>
-      <th>Buyout (item)</th>
-      <th>Buyout (stack)</th>
-      <th>Time Left</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#if loading}
-      <tr>
-        <td colspan="4">Loading auctions...</td>
-      </tr>
-    {/if}
-    {#each filteredAuctions as auction}
-      <tr>
-        <td>{auction.quantity}</td>
-        <td>{auction.buyoutItemParsed}</td>
-        <td>{auction.buyoutStackParsed}</td>
-        <td>{auction.time_left}</td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
+<style>
+  .auction {
+    width: 85%;
+    margin: 0 auto;
+  }
+
+  .auction__item {
+    margin: 45px 30px 60px 30px;
+  }
+
+  .auction__basic {
+    display: flex;
+    align-items: center;
+    gap: 35px;
+  }
+
+  .auction__basic img {
+    width: 160px;
+    height: 160px;
+    border-radius: 8px;
+  }
+
+  .auction__info {
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    width: 400px;
+  }
+
+  .auction__link {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  .auction__wowhead {
+    text-decoration: none;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .auction__arrow {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+  }
+
+  .auction__name {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 133%;
+    margin: 15px 0;
+  }
+
+  .auction__data {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .auction__table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .auction__table {
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    height: 430px;
+    font-family: 'Montserrat', sans-serif;
+    margin-top: auto;
+  }
+
+  tbody {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    display: block;
+    scrollbar-width: thin;
+    margin-top: 23px;
+  }
+
+  thead th {
+    width: 150px;
+    font-weight: 600;
+    color: #9A9A9A;
+    font-size: 16px;
+  }
+
+  tr {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    margin: 0 auto;
+    justify-content: space-around;
+  }
+
+  .auction__table td {
+    vertical-align: middle;
+    width: 150px;
+    color: #D1D1D1;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .auction__row {
+    padding: 18px 0;
+  }
+
+  .auction__row:nth-child(odd) {
+    background-color: #292929;
+  }
+
+  .auction__row:nth-child(even) {
+    background-color: #171717;
+  }
+</style>
