@@ -29,7 +29,7 @@
   }
 
   export async function getSearchResults(value, query) {
-    await fetch(`https://us.api.blizzard.com/data/wow/search/item?namespace=static-classic-us&locale=en_US&orderby=id:asc&name.en_US=${query}`, {
+    await fetch(`https://us.api.blizzard.com/data/wow/search/item?namespace=static-us&locale=en_US&orderby=id:asc&name.en_US=${query}`, {
       headers: {
         Authorization: `Bearer ${value}`,
       },
@@ -45,6 +45,13 @@
         return !item.data.name.en_US.includes('Test');
       })
 
+      // if the search has more than one word, get the exact match
+      if (query.split(' ').length > 1) {
+        data.results = data.results.filter((item) => {
+          return item.data.name.en_US.toLowerCase() === query.toLowerCase();
+        })
+      }
+
       searchResults.set(data.results);
       data.results.forEach((result) => {
         getSearchMedia(value, result.data.id);
@@ -53,7 +60,7 @@
   }
 
   export async function getSearchMedia(value, id) {
-    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US&`, {
+    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-us&locale=en_US&`, {
       headers: {
         Authorization: `Bearer ${value}`,
       },
@@ -72,7 +79,7 @@
   }
 
   export async function getItem(value, slug) {
-    await fetch(`https://us.api.blizzard.com/data/wow/item/${slug.slug}?namespace=static-classic-us&locale=en_US`, {
+    await fetch(`https://us.api.blizzard.com/data/wow/item/${slug.slug}?namespace=static-us&locale=en_US`, {
       headers: {
         Authorization: `Bearer ${value}`,
       },
@@ -85,7 +92,7 @@
   }
 
   export async function getMedia(value, id) {
-    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-classic-us&locale=en_US`, {
+    await fetch(`https://us.api.blizzard.com/data/wow/media/item/${id}?namespace=static-us&locale=en_US`, {
       headers: {
         Authorization: `Bearer ${value}`,
       },
