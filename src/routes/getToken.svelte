@@ -5,6 +5,7 @@
   export const token = writable('');
   export const items = writable([]);
   export const auctions = writable([]);
+  export const auctionAmount = writable(0);
   export const item = writable({});
   export const searchResults = writable([]);
 
@@ -117,5 +118,17 @@
       auctions.set(data.auctions.filter(auction => auction.item.id === parseInt(slug.slug)));
     })
     
+  }
+
+  export async function getAllAuctions(value) {
+    await fetch(`https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2?namespace=dynamic-classic-us&locale=en_US&orderby=buyout:desc`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      auctionAmount.set(data.auctions.length);
+    })
   }
 </script>

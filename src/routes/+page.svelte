@@ -5,9 +5,12 @@
   import Card from '../components/Card.svelte';
   import RandomItem from '../components/RandomItem.svelte';
   import Navigation from '../components/Navigation.svelte';
+  import { getServerSideProps, getAllAuctions, token, auctionAmount } from './getToken.svelte';
 
   // define searchQuery
-  let searchQuery = '';
+  let searchQuery = '',
+      auctionCount = 0,
+      totalAuctions = 0;
 
   export let card = {
     itemId: 45085,
@@ -45,7 +48,46 @@
     }
   };
 
-  onMount(() => {
+  onMount(async () => {
+    await getServerSideProps()
+    .then(() => {
+      token.subscribe((value) => {
+        getAllAuctions(value);
+      });
+
+      auctionAmount.subscribe((value) => {
+        auctionCount = value;
+
+        animateValue('hero__number', 0, auctionCount, 2500);
+      })
+    })
+
+    function animateValue(id, start, end, duration) {
+      var range = end - start;
+      var current = start;
+      var obj = document.getElementById(id);
+      var starttime;
+      var fn = (ms) => {
+          let progress = 0;
+          if(starttime === undefined) {
+              starttime = ms;
+          } else {
+              progress = ms - starttime;
+              if (progress >= duration) {
+                  // the `+ ' ' + progress + 'ms';` is just to show the duration, wouldn't use that in final code
+                  current = end.toLocaleString()
+              } else {
+                  current = start + Math.floor(progress/duration * range);
+              }
+          }
+          obj.innerHTML = current.toLocaleString();
+          if (progress < duration) {
+              requestAnimationFrame(fn);
+          }
+      };
+      requestAnimationFrame(fn);
+    }
+
     document.querySelectorAll(".expensive__cards .card").forEach(card => {
       card.querySelector(".card__listings").style.display = "none";
     })
@@ -56,7 +98,7 @@
   <!-- replace 10k with real data later -->
   <div class="hero__splash">
     <div class="hero__text">
-      <h1 class="hero__title">Explore <span class="hero__number">10,487</span> Listings on Atiesh</h1>
+      <h1 class="hero__title">Explore <span class="hero__number" id="hero__number">0</span> Listings on Atiesh</h1>
       <h2 class="hero__subtitle">Auctions listed are for Wrath of the Lich King Classic. Updated every hour, freely discover every listing on the server!</h2>
       <input
       class="hero__search"
@@ -71,7 +113,7 @@
   </div>
   <section class="hero__stats">
     <ul class="hero__info">
-      <li class="hero__items hero__info--item"><span class="hero__data">200K+</span> Items</li>
+      <li class="hero__items hero__info--item"><span class="hero__data">200k</span> Items</li>
       <li class="hero__cheapest hero__info--item"><span class="hero__data">30<span class="hero__copper">c</span></span> Cheapest</li>
       <li class="hero__expensive hero__info--item"><span class="hero__data">16,000<span class="hero__gold">g</span></span> Most Expensive</li>
       <li class="hero__time hero__info--item"><span class="hero__data">3,264</span> Short Time Left</li>
@@ -146,7 +188,7 @@
     font-family: 'Montserrat', sans-serif;
     font-size: 84px;
     font-weight: 600;
-    width: 750px;
+    width: 800px;
     line-height: 120%;
   }
 

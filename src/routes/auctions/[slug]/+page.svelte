@@ -125,7 +125,7 @@
           {/if}
     </div>
       <div class="auction__link">
-        <a href="https://wowhead.com/wotlk/item={foundItem.id}" class="auction__wowhead" target="_blank">View On WowHead</a>
+        <a href="https://wowhead.com/wotlk/item={foundItem.id}" class="auction__wowhead" rel="noreferrer" target="_blank">View On WowHead</a>
         <img class="auction__arrow" src={Arrow} alt="Arrow indicating to go to link">
       </div>
   </section>
