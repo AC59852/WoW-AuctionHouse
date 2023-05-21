@@ -5,33 +5,16 @@
   import Card from '../components/Card.svelte';
   import RandomItem from '../components/RandomItem.svelte';
   import Navigation from '../components/Navigation.svelte';
-  import { getServerSideProps, getAllAuctions, token, auctionAmount } from './getToken.svelte';
+  import { getServerSideProps, getAllAuctions, token, auctionAmount, randomItemHighQuant, getHomeItem, homeItem, } from './getToken.svelte';
 
   // define searchQuery
   let searchQuery = '',
       auctionCount = 0,
-      totalAuctions = 0;
+      totalAuctions = 0,
+      tokenItem,
+      randomItem = {};
 
-  export let card = {
-    itemId: 45085,
-    name: 'Titansteel Spellblade',
-    icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg',
-    listings: 46,
-    minGold: 6,
-    maxGold: 300,
-  }
-
-  export let randomItems = [
-    {id: 0, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 1, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 2, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 3, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 4, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 5, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 6, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 7, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-    {id: 8, itemId: 45085, name: 'Titansteel Spellblade', price: 14989979, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
-  ]
+  export let card = {}
 
   export let expensiveItems = [
     {id: 0, itemId: 45085, name: 'Titansteel Spellblade', listings: 3, minGold: 1600, maxGold: 4817, icon: 'https://render.worldofwarcraft.com/classic-us/icons/56/inv_sword_73.jpg'},
@@ -52,6 +35,7 @@
     await getServerSideProps()
     .then(() => {
       token.subscribe((value) => {
+        tokenItem = value;
         getAllAuctions(value);
       });
 
@@ -59,6 +43,33 @@
         auctionCount = value;
 
         animateValue('hero__number', 0, auctionCount, 2500);
+      })
+
+      randomItemHighQuant.subscribe((value) => {
+        randomItem = value;
+
+        if(Object.keys(randomItem).length !== 0) {
+          getHomeItem(tokenItem, randomItem.item.id);
+        }
+      })
+
+      homeItem.subscribe((value) => {
+        if(Object.keys(value).length !== 0) {
+          // format the buyout price gold silver and copper
+          let gold = Math.floor(randomItem.buyout / 10000);
+          let silver = Math.floor((randomItem.buyout - (gold * 10000)) / 100);
+          let copper = randomItem.buyout - (gold * 10000) - (silver * 100);
+
+          let parsedPrice = `${gold.toLocaleString()}g ${silver.toLocaleString()}s ${copper.toLocaleString()}c`;
+          card = {
+            itemId: value.id,
+            icon: value.media,
+            name: value.name,
+            listings: randomItem.quantity,
+            buyout: parsedPrice,
+            time_left: randomItem.time_left,
+          }
+        }
       })
     })
 
@@ -87,10 +98,6 @@
       };
       requestAnimationFrame(fn);
     }
-
-    document.querySelectorAll(".expensive__cards .card").forEach(card => {
-      card.querySelector(".card__listings").style.display = "none";
-    })
   });
 </script>
 <Navigation />
@@ -109,7 +116,10 @@
       on:keydown={handleKeyDown}
       >
     </div>
-    <Card card={card} />
+    <!-- hide the card until its not empty -->
+    {#if Object.keys(card).length !== 0}
+      <Card card={card} />
+    {/if}
   </div>
   <section class="hero__stats">
     <ul class="hero__info">
@@ -129,14 +139,6 @@
     <li class="home__category"><a href="/">Gems</a></li>
     <li class="home__category"><a href="/">Trade</a></li>
     <li class="home__category"><a href="/">More</a></li>
-  </ul>
-</section>
-<section class="home__random">
-  <h2 class="home__title">Random <span><img src={Arrow} class="home__arrow" alt="Arrow pointing right"></span></h2>
-  <ul class="home__randomList">
-    {#each randomItems as item}
-      <RandomItem item={item} />
-    {/each}
   </ul>
 </section>
 <section class="home__expensive">

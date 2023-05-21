@@ -1,9 +1,9 @@
 <script>
   export let item = {};
 
-  let gold = Math.floor(item.price / 10000);
-  let silver = Math.floor((item.price - (gold * 10000)) / 100);
-  let copper = item.price - (gold * 10000) - (silver * 100);
+  let gold = Math.floor(item.buyout / 10000);
+  let silver = Math.floor((item.buyout - (gold * 10000)) / 100);
+  let copper = item.buyout - (gold * 10000) - (silver * 100);
 
   item.parsedPrice = `${gold}g ${silver}s ${copper}c`;
 </script>

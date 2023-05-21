@@ -7,7 +7,11 @@
   export const auctions = writable([]);
   export const auctionAmount = writable(0);
   export const item = writable({});
+  export const homeItem = writable({});
   export const searchResults = writable([]);
+  export const randomItems = writable([]);
+  export const randomItemHighQuant = writable({});
+  export const homeItemList = writable([]);
 
   export async function getServerSideProps() {
     const response = await axios.get('https://wow-ah-server.onrender.com/');
@@ -104,6 +108,11 @@
         n.media = data.assets[0].value;
         return n;
       })
+
+      homeItem.update(n => {
+        n.media = data.assets[0].value;
+        return n;
+      })
     })
   }
 
@@ -121,14 +130,49 @@
   }
 
   export async function getAllAuctions(value) {
-    await fetch(`https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2?namespace=dynamic-classic-us&locale=en_US&orderby=buyout:desc`, {
+    await fetch(`https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2?namespace=dynamic-classic-us&locale=en_US&orderby=buyout:asc`, {
       headers: {
         Authorization: `Bearer ${value}`,
       },
     })
     .then(response => response.json())
     .then(data => {
+      console.log(Math.floor(Math.random() * data.auctions.length))
+      // get a random item
+      const randomItem = data.auctions[Math.floor(Math.random() * data.auctions.length)];
+
+      // if there are multiple of the same item, get the one with the lowest price
+      const randomItems = data.auctions.filter((item) => {
+        return item.item.id === randomItem.item.id;
+      })
+
+      console.log(randomItems)
+
+      randomItems.sort((a, b) => {
+        if (a.buyout < b.buyout) {
+          return -1;
+        }
+        if (a.buyout > b.buyout) {
+          return 1;
+        }
+        return 0;
+      })
+
+      randomItemHighQuant.set(randomItems[0]);
       auctionAmount.set(data.auctions.length);
+    })
+  }
+
+  export async function getHomeItem(value, id) {
+    await fetch(`https://us.api.blizzard.com/data/wow/item/${id}?namespace=static-us&locale=en_US`, {
+      headers: {
+        Authorization: `Bearer ${value}`,
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      homeItem.set(data)
+      getMedia(value, data.media.id)
     })
   }
 </script>

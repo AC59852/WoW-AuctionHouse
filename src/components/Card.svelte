@@ -8,11 +8,9 @@
   </div>
   <div class="card__info">
     <ul class="card__stats">
-      <li class="card__listings"><span class="card__number">{card.listings}</span> Listings</li>
-      <li class="card__min"><span class="card__gold">{card.minGold}g</span> Min</li>
-      <li class="card__max"><span class="card__gold">{card.maxGold}g</span> Max</li>
+      <li class="card__min"><span class="card__gold">{card.buyout}</span> Buyout</li>
     </ul>
-    <a href="/" class="card__button">View All Listings</a>
+    <a href="/auctions/{card.itemId}" class="card__button">View All Listings</a>
   </div>
 </div>
 <style>
