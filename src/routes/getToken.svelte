@@ -14,7 +14,7 @@
   export const homeItemList = writable([]);
 
   export async function getServerSideProps() {
-    const response = await axios.get('https://wow-ah-server.onrender.com/');
+    const response = await axios.get('https://vast-pear-penguin-shoe.cyclic.app/');
     token.set(response.data.access_token);
     return {
       props: {
@@ -24,7 +24,7 @@
   }
 
   export async function getServerSideItems() {
-    const response = await axios.get('https://wow-ah-server.onrender.com/items');
+    const response = await axios.get('https://vast-pear-penguin-shoe.cyclic.app/items');
     items.set(response.data);
     return {
       props: {
